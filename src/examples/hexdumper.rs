@@ -109,13 +109,22 @@ fn format_hexdump(data: &[u8]) -> String {
 }
 
 fn hexdump_body_stream(label: &'static str, body: StreamBody) -> StreamBody {
+    use hyper::body::Body as _;
+    if body.size_hint().upper() == Some(0) {
+        println!("[{label} hexdump] <empty stream>");
+        return body;
+    }
+
     let (tx, rx) = mpsc::channel::<Result<Frame<Bytes>, BoxError>>(16);
 
     tokio::spawn(async move {
         let mut body = body;
         loop {
             match body.frame().await {
-                None => break,
+                None => {
+                    println!("[{label} hexdump] <end of stream>");
+                    break;
+                }
                 Some(Ok(frame)) => {
                     if let Some(data) = frame.data_ref() {
                         if !data.is_empty() {
@@ -261,7 +270,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_file(true)
         .with_level(true)
         .with_writer(std::io::stdout)
-        .with_max_level(tracing::Level::DEBUG)
+        .with_max_level(tracing::Level::ERROR)
         .init();
 
     rustls::crypto::ring::default_provider()
