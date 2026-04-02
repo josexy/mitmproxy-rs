@@ -320,7 +320,7 @@ pub(crate) async fn serve_fixed_target_tunnel<IO>(
 where
     IO: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
-    let upstream_stream = upstream.connect(&host, port).await?;
+    let upstream_stream = upstream.connect(host, port).await?;
     serve_fixed_target_tunnel_with_upstream(
         client_io,
         host,
@@ -334,6 +334,7 @@ where
     .await
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn serve_fixed_target_tunnel_with_upstream<IO, U>(
     client_io: IO,
     host: &str,
@@ -398,7 +399,7 @@ where
     U: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
     let (client_hello, client_io) = extract_client_hello_info(client_io).await?;
-    let tls_host = select_tls_server_name(client_hello.sni, &host);
+    let tls_host = select_tls_server_name(client_hello.sni, host);
 
     // Step 1: connect to upstream TLS, forwarding the client's ALPN preferences, cipher
     // suites, and supported TLS versions so that the upstream sees the same fingerprint as
@@ -800,12 +801,12 @@ where
             // says clients SHOULD NOT send Host when :authority is present.
             // Strict servers (e.g. Google) return PROTOCOL_ERROR if Host appears
             // alongside :authority.
-            if !upstream_h2 && !req.headers().contains_key(hyper::header::HOST) {
-                if let Some(authority) = req.uri().authority() {
-                    if let Ok(value) = hyper::header::HeaderValue::from_str(authority.as_str()) {
-                        req.headers_mut().insert(hyper::header::HOST, value);
-                    }
-                }
+            if !upstream_h2
+                && !req.headers().contains_key(hyper::header::HOST)
+                && let Some(authority) = req.uri().authority()
+                && let Ok(value) = hyper::header::HeaderValue::from_str(authority.as_str())
+            {
+                req.headers_mut().insert(hyper::header::HOST, value);
             }
 
             let res = sender
@@ -999,7 +1000,7 @@ fn incoming_to_stream_body(body: hyper::body::Incoming) -> StreamBody {
     if body.is_end_stream() {
         full_to_stream_body(Full::new(Bytes::new()))
     } else {
-        BoxBody::new(body.map_err(|e| BoxError::new(e)))
+        BoxBody::new(body.map_err(BoxError::new))
     }
 }
 

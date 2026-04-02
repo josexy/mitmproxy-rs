@@ -60,6 +60,12 @@ pub struct CaBuilder {
     params: CertificateParams,
 }
 
+impl Default for CaBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CaBuilder {
     pub fn new() -> Self {
         let mut params: CertificateParams = CertificateParams::new(vec![]).unwrap();

@@ -18,7 +18,7 @@ pub enum ProxyError {
     CertGen(#[from] rcgen::Error),
 
     #[error("WebSocket error: {0}")]
-    WebSocket(#[from] tokio_tungstenite::tungstenite::Error),
+    WebSocket(Box<tokio_tungstenite::tungstenite::Error>),
 
     #[error("SOCKS5 error: {0}")]
     Socks5(String),
@@ -36,6 +36,12 @@ pub enum ProxyError {
 impl From<crate::interceptor::BoxError> for ProxyError {
     fn from(value: crate::interceptor::BoxError) -> Self {
         Self::Interceptor(value)
+    }
+}
+
+impl From<tokio_tungstenite::tungstenite::Error> for ProxyError {
+    fn from(value: tokio_tungstenite::tungstenite::Error) -> Self {
+        Self::WebSocket(Box::new(value))
     }
 }
 
