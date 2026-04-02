@@ -1,0 +1,45 @@
+[package]
+name = "mitmproxy-rs"
+version = "0.1.0"
+edition = "2024"
+description = "A Rust implementation of a MITM proxy"
+categories = ["network-programming", "proxy", "mitm"]
+keywords = ["mitm", "proxy", "network", "rustls", "hyper", "tokio", "http", "https", "websocket"]
+repository = "https://github.com/josexy/mitmproxy-rs"
+license = "MIT"
+readme = "README.md"
+
+[lib]
+name = "mitmproxy"
+path = "src/lib.rs"
+
+[[example]]
+name = "hexdumper"
+path = "src/examples/hexdumper.rs"
+
+[dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "sync", "macros"] }
+hyper = { version = "1", features = ["http1", "http2", "client", "server"] }
+hyper-util = { version = "0.1", features = ["tokio", "server", "server-auto", "http1", "http2"] }
+http-body-util = "0.1"
+h2 = "0.4"
+rustls = { version = "0.23", default-features = false, features = ["ring", "logging", "std", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "logging", "tls12"] }
+rcgen = { version = "0.14.1", features = ["aws_lc_rs", "x509-parser"] }
+rustls-pemfile = "2"
+tokio-tungstenite = { version = "0.24", features = ["rustls-tls-native-roots"] }
+lru = "0.12"
+async-trait = "0.1"
+thiserror = "2"
+bytes = "1"
+tracing = "0.1"
+webpki-roots = "0.26"
+rustls-native-certs = "0.8"
+base64 = "0.22"
+futures-util = "=0.3.31"
+chrono = "0.4.44"
+x509-parser = "0.16"
+
+[dev-dependencies]
+clap = { version = "4", features = ["derive"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
